@@ -1,0 +1,1 @@
+cloud-bg.png is the supplied 1600x1336 reference cloud background. Other reference screenshots were used as visual specifications and are not required at runtime.
