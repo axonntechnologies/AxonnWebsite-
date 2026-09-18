@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Lenis from "lenis";
-import { motion } from "motion/react";
+import { motion, useScroll, useMotionValueEvent } from "motion/react";
 import {
   Activity,
   BarChart3,
@@ -13,9 +13,10 @@ import { Navbar } from "./Navbar";
 import { Logo } from "./Logo";
 import { CloudBackground } from "./CloudBackground";
 import { HeroDashboard } from "./HeroDashboard";
+import { HeroConnectedElements } from "./HeroConnectedElements";
 import { DataFlow } from "./DataFlow";
 import { SectionHeading } from "./SectionHeading";
-import { FeatureCard } from "./FeatureCard";
+import { WhatWeDoWorkflow } from "./WhatWeDoWorkflow";
 import { ProcessFlow } from "./ProcessFlow";
 import { TechnologyOrbit } from "./TechnologyOrbit";
 import { WhyAxonn } from "./WhyAxonn";
@@ -26,6 +27,19 @@ import { FAQ } from "./FAQ";
 import { FinalCTA } from "./FinalCTA";
 
 function App() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [heroActiveStage, setHeroActiveStage] = useState(0);
+
+  const { scrollYProgress: heroScrollProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end 80%"]
+  });
+
+  useMotionValueEvent(heroScrollProgress, "change", (v) => {
+    const stage = Math.min(4, Math.max(0, Math.floor(v * 5)));
+    setHeroActiveStage(stage);
+  });
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.1,
@@ -61,9 +75,9 @@ function App() {
 
       <main>
         {/* =====================================================
-            HERO
+            HERO — IMMERSIVE CLOUD + FINTECH TRADING PLATFORM
         ====================================================== */}
-        <section id="home" className="hero">
+        <section id="home" className="hero hero-immersive-section" ref={heroRef}>
           <CloudBackground />
 
           <div className="hero-content">
@@ -151,12 +165,18 @@ function App() {
               <ArrowRight size={17} />
             </motion.button>
 
-            <DataFlow />
+            {/* Interactive Process Navigation */}
+            <DataFlow
+              activeStage={heroActiveStage}
+              onSelectStage={setHeroActiveStage}
+            />
 
+            {/* Central Floating Dashboard + Left/Right Connected Elements */}
             <motion.div
+              className="hero-dashboard-viewport-wrap"
               initial={{
                 opacity: 0,
-                y: 26,
+                y: 28,
                 scale: 0.98,
               }}
               animate={{
@@ -170,9 +190,8 @@ function App() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <div className="dashboard-float">
-                <HeroDashboard />
-              </div>
+              <HeroConnectedElements activeStage={heroActiveStage} />
+              <HeroDashboard activeStage={heroActiveStage} />
             </motion.div>
           </div>
         </section>
@@ -182,7 +201,7 @@ function App() {
         ====================================================== */}
         <section
           id="what-we-do"
-          className="section standard-section"
+          className="section standard-section what-we-do-section"
         >
           <SectionHeading title="What we do">
             Axonn brings the four core functions of a modern trading desk into
@@ -190,35 +209,7 @@ function App() {
             analysing are part of the same system rather than separate tools.
           </SectionHeading>
 
-          <div className="feature-grid">
-            <FeatureCard
-              index={0}
-              icon={Link2}
-              title="Connect"
-              text="Link brokers, market data feeds and strategy code through one integration layer."
-            />
-
-            <FeatureCard
-              index={1}
-              icon={Workflow}
-              title="Automate"
-              text="Turn strategy logic into deployed, running processes without manual intervention."
-            />
-
-            <FeatureCard
-              index={2}
-              icon={Activity}
-              title="Monitor"
-              text="Track positions, risk and system health in real time from a single dashboard."
-            />
-
-            <FeatureCard
-              index={3}
-              icon={BarChart3}
-              title="Analyze"
-              text="Review performance, attribution and risk with consistent, structured data."
-            />
-          </div>
+          <WhatWeDoWorkflow />
         </section>
 
         {/* =====================================================
@@ -226,23 +217,9 @@ function App() {
         ====================================================== */}
         <section
           id="how-we-do"
-          className="section how-section"
+          className="section how-section-wrapper"
         >
-          <div className="how-copy">
-            <SectionHeading
-              align="left"
-              title="How it works"
-            >
-              A clear path from integration to insight. Each stage feeds the
-              next, so the operation runs as one continuous loop rather than a
-              set of disconnected steps.
-            </SectionHeading>
-          </div>
-
-          <div className="process-area">
-            <div className="ambient-blue" />
-            <ProcessFlow />
-          </div>
+          <ProcessFlow />
         </section>
 
         {/* =====================================================
@@ -268,13 +245,15 @@ function App() {
           id="motto"
           className="section motto-section"
         >
-          <SectionHeading
-            align="left"
-            title="Why Axonn"
-          >
-            Technology with a purpose: less fragmentation, more visibility and
-            better control over how your operation runs.
-          </SectionHeading>
+          <div className="why-axonn-heading-block">
+            <h2 className="why-main-title">
+              Why <span className="text-cyan-gradient">Axonn</span>
+            </h2>
+            <p className="why-main-desc">
+              Technology with a purpose: less fragmentation, more visibility and
+              better control over how your operation runs.
+            </p>
+          </div>
 
           <WhyAxonn />
 
@@ -289,7 +268,7 @@ function App() {
               <h2>
                 Everything in one
                 <br />
-                connected environment
+                connected environment.
               </h2>
             </div>
 
@@ -298,14 +277,6 @@ function App() {
                 Platform capabilities built for automation and designed to
                 scale as you add strategies, accounts and data sources.
               </p>
-
-              <button
-                className="dark-pill cta-arrow-btn"
-                onClick={() => scrollTo("contact")}
-              >
-                View all features
-                <ArrowRight size={14} />
-              </button>
             </div>
           </div>
 
@@ -327,95 +298,22 @@ function App() {
         ====================================================== */}
         <section
           id="faq"
-          className="section faq-section"
+          className="section faq-section-wrapper"
         >
-          <SectionHeading title="Frequently Asked Questions">
-            How Axonn connects to what you already use, how risk is enforced and
-            what the dashboard shows.
-          </SectionHeading>
-
-          <div className="faq-tags">
-            <span>Platform</span>
-            <span>Integrations</span>
-            <span>Risk</span>
-            <span>Data</span>
-            <span className="active">All</span>
-          </div>
-
           <FAQ />
         </section>
 
         {/* =====================================================
-            FINAL CTA
+            FINAL CTA SECTION (CONNECTED OPERATIONS & BOOK A DEMO)
         ====================================================== */}
-        <FinalCTA onCta={() => scrollTo("contact")} />
+        <FinalCTA onScrollTo={scrollTo} />
       </main>
 
       {/* =====================================================
           FOOTER
       ====================================================== */}
-      <footer className="footer">
-        <div className="footer-main">
-          <div className="footer-brand">
-            <Logo dark />
-          </div>
-
-          <div className="footer-message">
-            <h2>
-              One environment for the
-              <br />
-              whole trading operation.
-            </h2>
-
-            <p>
-              Axonn connects data, strategy, execution, risk and analytics so
-              teams spend less time moving information between tools and more
-              time on the decisions that matter.
-            </p>
-
-            <div className="footer-links">
-              <button
-                onClick={() => scrollTo("home")}
-              >
-                About us
-              </button>
-
-              <button
-                onClick={() => scrollTo("what-we-do")}
-              >
-                Know More
-              </button>
-
-              <button
-                onClick={() => scrollTo("technologies")}
-              >
-                Services
-              </button>
-            </div>
-          </div>
-
-          <div className="footer-demo">
-            <label>
-              Email address
-
-              <input
-                type="email"
-                placeholder="Email address"
-              />
-            </label>
-
-            <button
-              className="blue-small"
-              onClick={() => scrollTo("contact")}
-            >
-              Book a Demo
-            </button>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <span>© 2026 All rights reserved</span>
-        </div>
+      <footer className="footer-bottom-bar">
+        <span>© 2026 All rights reserved</span>
       </footer>
     </div>
   );

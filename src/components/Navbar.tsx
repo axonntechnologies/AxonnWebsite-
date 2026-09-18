@@ -35,7 +35,7 @@ export function Navbar() {
         <motion.button
           className="nav-logo-button"
           onClick={() => go("home")}
-          aria-label="Go home"
+          aria-label="Axonn Technologies"
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
